@@ -31,12 +31,31 @@ const aiModel = genAI.getGenerativeModel({
     `
 });
 
-// Google Sheets Auth Connection
-let keys = JSON.parse(process.env.GOOGLE_CREDS);
+
+
+
+// Google Sheets Auth Connection Robust Setup
+let keys;
+try {
+    keys = JSON.parse(process.env.GOOGLE_CREDS);
+} catch (parseError) {
+    console.error("❌ CRITICAL: GOOGLE_CREDS environment variable is not valid JSON.");
+}
+
+// Automatically fix common newline stripping issues caused by cloud hosting providers
+const formattedPrivateKey = keys && keys.private_key 
+    ? keys.private_key.replace(/\\n/g, '\n') 
+    : null;
+
 const client = new google.auth.JWT(
-    keys.client_email, null, keys.private_key,
+    keys ? keys.client_email : null,
+    null,
+    formattedPrivateKey,
     ['https://www.googleapis.com/auth/spreadsheets']
 );
+
+
+
 
 // --- RELIABLE SHEETS DATABASE HANDLERS ---
 async function getUserLanguage(userId) {
