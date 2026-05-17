@@ -34,6 +34,7 @@ const aiModel = genAI.getGenerativeModel({
 
 
 
+
 // --- SECURE DIRECT GOOGLE AUTH SERVICE ACCOUNT LINK ---
 const googleCredentials = {
   "type": "service_account",
@@ -72,6 +73,8 @@ ATt3DVgyjh898x/NIeRVFR3e
 
 const client = google.auth.fromJSON(googleCredentials);
 client.scopes = ['https://www.googleapis.com/auth/spreadsheets'];
+
+
 
 
 
