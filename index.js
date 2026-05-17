@@ -31,17 +31,30 @@ const aiModel = genAI.getGenerativeModel({
     `
 });
 
-// --- SECURE GOOGLE AUTH INITIALIZATION ---
-// Safely handle newlines from environment variables
-const cleanPrivateKey = process.env.GOOGLE_PRIVATE_KEY 
-    ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n') 
-    : null;
 
-const authClient = new google.auth.JWT({
-    email: process.env.GOOGLE_CLIENT_EMAIL,
-    key: cleanPrivateKey,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets']
-});
+
+
+// --- SECURE GOOGLE AUTH INITIALIZATION ---
+let authClient;
+
+try {
+    // This parses your GOOGLE_CREDS environment variable perfectly
+    const credentials = JSON.parse(process.env.GOOGLE_CREDS);
+    
+    authClient = new google.auth.JWT({
+        email: credentials.client_email,
+        key: credentials.private_key.replace(/\\n/g, '\n'), // Fixes any string formatting hidden line errors
+        scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    });
+    console.log("🔒 Google Sheets Auth initialized successfully via GOOGLE_CREDS.");
+} catch (error) {
+    console.error("❌ CRITICAL: Failed to parse GOOGLE_CREDS environment variable:", error.message);
+}
+
+
+
+
+
 
 // --- RELIABLE SHEETS DATABASE HANDLERS ---
 async function getUserLanguage(userId) {
@@ -91,6 +104,11 @@ async function logUnlockedUser(userId) {
     } catch (e) { console.error("Error logging unlocked user entry:", e.message); }
 }
 
+
+
+
+
+
 // --- WHATSAPP WIRE TRANSMISSION ENGINE ---
 async function sendToWhatsApp(to, dataPayload) {
     try {
@@ -105,6 +123,11 @@ async function sendToWhatsApp(to, dataPayload) {
         if (e.response) console.error("❌ Transmission Error:", JSON.stringify(e.response.data, null, 2));
     }
 }
+
+
+
+
+
 
 // --- DYNAMIC INTERACTIVE MENUS ---
 async function sendLanguageSelector(to) {
@@ -168,6 +191,10 @@ async function sendVerticalActionMenu(to, lang) {
     });
 }
 
+
+
+
+
 // --- GEMINI RESPONSE COMPILER ---
 async function getSmartReply(userMessage, userId, lang) {
     try {
@@ -199,6 +226,11 @@ async function getSmartReply(userMessage, userId, lang) {
         return aiText;
     } catch (error) { return "System latency detected. Please try again shortly or contact mohammadyasin568@gmail.com"; }
 }
+
+
+
+
+
 
 // --- CORE GATEWAY ROUTERS ---
 app.get('/webhook', (req, res) => {
