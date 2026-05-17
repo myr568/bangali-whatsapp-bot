@@ -34,48 +34,24 @@ const aiModel = genAI.getGenerativeModel({
 
 
 
-
 // --- SECURE DIRECT GOOGLE AUTH SERVICE ACCOUNT LINK ---
 const googleCredentials = {
   "type": "service_account",
   "project_id": "nice-aegis-496104-q5",
   "private_key_id": "90e81ff778f116401d7dda9d5726be4097027d2e",
-  "private_key": `-----BEGIN PRIVATE KEY-----
-MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCt8ESHWdRaO26F
-V2Iilj6u8xlHTpvlJk2lcQ6/KkIvunHCerJ/y7IUg9umIPPSHSV98novE5L7uLIm
-NqZFXKpzLHuXzjFD6AbxDBJtrYaRJq0XHyh2pjulX4y8d/orIGfJVn33/j4AO8km
-0zjXYzBOA3WEW6dJJXQoTGrU3PK/QGCdkg0/O+TjrOktV8ZEGd39t5YwHKMdlkWo
-SPT4XrumELa0h1Vps3xz+IjWNOfIMsG7/a6UEfH2Tk42SjrKdNB+4w34OGl9brjS
-XSjMLAvX5dZvfLVO95lOAW9KBCsPGCZgIDRyXzto2UMmFaZzaGOAvk1e9elMMcaK
-06G67O75AgMBAAECggEAARpc240zW8bJ3rYXukzrb6wSd7bfpbPDunNtqsLU7HJj
-+MioO50Pehz+RlQp/6XYKu+KnKRPjQxA3Z2rRGrVQ4mKF25ttmFxCSkbWnnceIH/
-MdOXK9jGLY2zedl6lbiXoo72GbMRcmpuo4dOMmLKYmBCvUNghkX4HIOkNMku5TgR
-B6bEPmepvnrkgcBifQgsh3jRSspBl3yh/MJrxwttUZTM94n0+NnqRZoIzOo8aWTh
-jgtLBitLyU5xC9C7AHkWKfJEVP+eM+fKj/QD6ecOlBOFfH4/EdGW0vPmRBtLEVUP
-nnU8u+v3pnin/4BLRB+d5lf+LhSngw1ybcdgnhqNJQQKBgQDT5a7CrpPqW46P4dUF
-czEYisUjlCsmrJvk03vdTrli3+Eyr3gyedg5WU33gV4bzsFWolcoVyrDS5La+1/S
-yM/CuRytAWDzaRRjLL/xL32jsSY6CS71KTGSHdQ0nKMddt5vCZU+aTPg6qQBZ3sT
-C1N6Ej2JtKJp4f9LO8ESUkruGQKBgQDSJBH3dASlfJZFmMh4YnE6tRuOn00wa7TW
-WT8h81Zgn4Jjuii+v+C69RtbNK6OMQLGXaiJIshOlaXTrnNs3EVV0w/EpPG5AQD7
-nnIgZOM3v8vFdqUDTxKfOshEQ/aDN92vMkT0ddF5Ck2NHWKParOqRXCXKQvO0CbgE
-Pr0eWK5j4QKBgF6pt38lutLyAChrPV1n7sEGDbgtU3G9nw+FI0rlBpETb2nTViFG
-qcBFEz3FP6OwpFLtx34wItyIgJzvvAlQyPA2/oaTnRphEUiVD1LSYpCkbW1z+NRx
-iMG8LbcrWvuoxQpZ/6CYIyMR8B7oeeUyJCLezzsbxYsD+adElKZ4uRzRAoGBAKSK
-wda07X5202OjgjVhP6/sZ6uBaPtlGrBMKXb4BsaZn4tfFNBnhhxeGBGOaq/ECJwy
-cekPZzDBVJsvmgm/YDsXjN05Glz2QELECn1VUUt1OzFPegdXkN3z6BEZx3P/LFV9
-1BDgMX6H0dDnw0VS6EjxklWRnyl2ArSwO30ri0GBAoGBAMZ9mZRmrQYkjWrfFANH
-eJeqUF+lMdaih854p3zny+5QOrdMRSuSZQI8xYKtcSYheKf2A6hbGZCboFqdi3Lr
-EABN3lcSfBtlPFpS22g3GKqNITofRFTC5hT8PPKaqlRiwAy0MDqIlmWUZa2ux4IF
-ATt3DVgyjh898x/NIeRVFR3e
------END PRIVATE KEY-----`,
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCt8ESHWdRaO26F\nV2Iilj6u8xlHTpvlJk2lcQ6/KkIvunHCerJ/y7IUg9umIPPSHSV98novE5L7uLIm\nNqZFXKpzLHuXzjFD6AbxDBJtrYaRJq0XHyh2pjulX4y8d/orIGfJVn33/j4AO8km\n0zjXYzBOA3WEW6dJJXQoTGrU3PK/QGCdkg0/O+TjrOktV8ZEGd39t5YwHKMdlkWo\nSPT4XrumELa0h1Vps3xz+IjWNOfIMsG7/a6UEfH2Tk42SjrKdNB+4w34OGl9brjS\nXSjMLAvX5dZvfLVO95lOAW9KBCsPGCZgIDRyXzto2UMmFaZzaGOAvk1e9elMMcaK\n06G67O75AgMBAAECggEAARpc240zW8bJ3rYXukzrb6wSd7bfpbPDunNtqsLU7HJj\n+MioO50Pehz+RlQp/6XYKu+KnKRPjQxA3Z2rRGrVQ4mKF25ttmFxCSkbWnnceIH/\nMdOXK9jGLY2zedl6lbiXoo72GbMRcmpuo4dOMmLKYmBCvUNghkX4HIOkNMku5TgR\nB6bEPmepvnrkgcBifQgsh3jRSspBl3yh/MJrxwttUZTM94n0+NnqRZoIzOo8aWTh\njgtLBitLyU5xC9C7AHkWKfJEVP+eM+fKj/QD6ecOlBOFfH4/EdGW0vPmRBtLEVUP\nnU8u+v3pnin/4BLRB+d5lf+LhSngw1ybcdgnhqNJQQKBgQDT5a7CrpPqW46P4dUF\nczEYisUjlCsmrJvk03vdTrli3+Eyr3gyedg5WU33gV4bzsFWolcoVyrDS5La+1/S\nyM/CuRytAWDzaRRjLL/xL32jsSY6CS71KTGSHdQ0nKMddt5vCZU+aTPg6qQBZ3sT\nC1N6Ej2JtKJp4f9LO8ESUkruGQKBgQDSJBH3dASlfJZFmMh4YnE6tRuOn00wa7TW\nWT8h81Zgn4Jjuii+v+C69RtbNK6OMQLGXaiJIshOlaXTrnNs3EVV0w/EpPG5AQD7\nnIgZOM3v8vFdqUDTxKfOshEQ/aDN92vMkT0ddF5Ck2NHWKParOqRXCXKQvO0CbgE\nPr0eWK5j4QKBgF6pt38lutLyAChrPV1n7sEGDbgtU3G9nw+FI0rlBpETb2nTViFG\nncBFEz3FP6OwpFLtx34wItyIgJzvvAlQyPA2/oaTnRphEUiVD1LSYpCkbW1z+NRx\niMG8LbcrWvuoxQpZ/6CYIyMR8B7oeeUyJCLezzsbxYsD+adElKZ4uRzRAoGBAKSK\nwda07X5202OjgjVhP6/sZ6uBaPtlGrBMKXb4BsaZn4tfFNBnhhxeGBGOaq/ECJwy\ncekPZzDBVJsvmgm/YDsXjN05Glz2QELECn1VUUt1OzFPegdXkN3z6BEZx3P/LFV9\n1BDgMX6H0dDnw0VS6EjxklWRnyl2ArSwO30ri0GBAoGBAMZ9mZRmrQYkjWrfFANH\neJeqUF+lMdaih854p3zny+5QOrdMRSuSZQI8xYKtcSYheKf2A6hbGZCboFqdi3Lr\nEABN3lcSfBtlPFpS22g3GKqNITofRFTC5hT8PPKaqlRiwAy0MDqIlmWUZa2ux4IF\nATt3DVgyjh898x/NIeRVFR3e\n-----END PRIVATE KEY-----\n",
   "client_email": "chatbotbangalifoundation@nice-aegis-496104-q5.iam.gserviceaccount.com"
 };
 
-const client = google.auth.fromJSON(googleCredentials);
-client.scopes = ['https://www.googleapis.com/auth/spreadsheets'];
+// Explicitly parse line breaks using regex to format correctly for OpenSSL
+const cleanPrivateKey = googleCredentials.private_key.replace(/\\n/g, '\n');
 
-
-
+const client = new google.auth.JWT(
+    googleCredentials.client_email,
+    null,
+    cleanPrivateKey,
+    ['https://www.googleapis.com/auth/spreadsheets']
+);
 
 
 
