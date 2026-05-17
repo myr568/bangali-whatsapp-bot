@@ -37,15 +37,32 @@ const aiModel = genAI.getGenerativeModel({
 // Google Sheets Auth Connection Robust Setup
 let keys;
 try {
-    keys = JSON.parse(process.env.GOOGLE_CREDS);
+    // Strips out any hidden linebreaks or wrapping artifacts applied by Render's dashboard panel
+    let rawCreds = process.env.GOOGLE_CREDS;
+    if (rawCreds) {
+        rawCreds = rawCreds.trim().replace(/[\u200B-\u200D\uFEFF]/g, "");
+        keys = JSON.parse(rawCreds);
+    }
 } catch (parseError) {
-    console.error("❌ CRITICAL: GOOGLE_CREDS environment variable is not valid JSON.");
+    console.error("❌ CRITICAL: GOOGLE_CREDS environment variable parsing failure:", parseError.message);
 }
 
-// Automatically fix common newline stripping issues caused by cloud hosting providers
-const formattedPrivateKey = keys && keys.private_key 
-    ? keys.private_key.replace(/\\n/g, '\n') 
-    : null;
+// Clean and re-construct the multiline private key string formatting safely
+let formattedPrivateKey = null;
+if (keys && keys.private_key) {
+    formattedPrivateKey = keys.private_key.replace(/\\n/g, '\n');
+    if (!formattedPrivateKey.includes('\n') && formattedPrivateKey.includes(' ')) {
+        // Fallback catch mechanism if Render flattens the string down into spaces
+        formattedPrivateKey = "-----BEGIN PRIVATE KEY-----\n" + 
+            formattedPrivateKey
+            .replace("-----BEGIN PRIVATE KEY-----", "")
+            .replace("-----END PRIVATE KEY-----", "")
+            .trim()
+            .split(" ")
+            .join("\n") + 
+            "\n-----END PRIVATE KEY-----\n";
+    }
+}
 
 const client = new google.auth.JWT(
     keys ? keys.client_email : null,
