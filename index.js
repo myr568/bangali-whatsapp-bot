@@ -38,19 +38,38 @@ const aiModel = genAI.getGenerativeModel({
 let authClient;
 
 try {
-    // This parses your GOOGLE_CREDS environment variable perfectly
-    const credentials = JSON.parse(process.env.GOOGLE_CREDS);
-    
+    // 1. Retrieve the private key from environment variables
+    let rawPrivateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+    if (!rawPrivateKey) {
+        throw new Error("GOOGLE_PRIVATE_KEY environment variable is completely missing.");
+    }
+
+    // 2. Clear any accidental enclosing quotes added by pasting fields into dashboards
+    if (rawPrivateKey.startsWith('"') && rawPrivateKey.endsWith('"')) {
+        rawPrivateKey = rawPrivateKey.slice(1, -1);
+    }
+    if (rawPrivateKey.startsWith("'") && rawPrivateKey.endsWith("'")) {
+        rawPrivateKey = rawPrivateKey.slice(1, -1);
+    }
+
+    // 3. Forcefully re-parse standard escape sequences to fix OpenSSL break styles
+    const cleanPrivateKey = rawPrivateKey
+        .replace(/\\n/g, '\n')     // Fixes double escaped literal strings
+        .replace(/\n/g, '\n')      // Preserves existing newlines
+        .trim();
+
+    // 4. Initialize JWT with clean parameters
     authClient = new google.auth.JWT({
-        email: credentials.client_email,
-        key: credentials.private_key.replace(/\\n/g, '\n'), // Fixes any string formatting hidden line errors
+        email: process.env.GOOGLE_CLIENT_EMAIL,
+        key: cleanPrivateKey,
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
-    console.log("🔒 Google Sheets Auth initialized successfully via GOOGLE_CREDS.");
-} catch (error) {
-    console.error("❌ CRITICAL: Failed to parse GOOGLE_CREDS environment variable:", error.message);
-}
 
+    console.log("🔒 Google Sheets Auth initialized successfully via Clean Private Key.");
+} catch (error) {
+    console.error("❌ CRITICAL: Failed to initialize Google Auth layer:", error.message);
+}
 
 
 
