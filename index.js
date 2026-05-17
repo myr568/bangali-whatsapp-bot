@@ -40,21 +40,20 @@ const googleCredentials = {
   "client_email": "chatbotbangalifoundation@nice-aegis-496104-q5.iam.gserviceaccount.com"
 };
 
-// Clean and decode the multi-line key for OpenSSL validation
+// Clean raw backslashes from the string payload explicitly
 const cleanPrivateKey = googleCredentials.private_key.replace(/\\n/g, '\n');
 
-const client = new google.auth.JWT(
-    googleCredentials.client_email,
-    null,
-    cleanPrivateKey,
-    ['https://www.googleapis.com/auth/spreadsheets']
-);
+// Standardized options object block targeting the underlying Google Auth options interface directly
+const authClient = new google.auth.JWT({
+    email: googleCredentials.client_email,
+    key: cleanPrivateKey,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets']
+});
 
 // --- RELIABLE SHEETS DATABASE HANDLERS ---
 async function getUserLanguage(userId) {
     try {
-        await client.authorize(); // Refresh token authorization handshake
-        const gsapi = google.sheets({ version: 'v4', auth: client });
+        const gsapi = google.sheets({ version: 'v4', auth: authClient });
         const response = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'UserPrefs!A:B' });
         const rows = response.data.values;
         if (rows) {
@@ -66,8 +65,7 @@ async function getUserLanguage(userId) {
 
 async function logLanguage(userId, lang) {
     try {
-        await client.authorize(); // Refresh token authorization handshake
-        const gsapi = google.sheets({ version: 'v4', auth: client });
+        const gsapi = google.sheets({ version: 'v4', auth: authClient });
         await gsapi.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID, 
             range: 'UserPrefs!A:B',
@@ -80,8 +78,7 @@ async function logLanguage(userId, lang) {
 
 async function checkUserUnlocked(userId) {
     try {
-        await client.authorize(); // Refresh token authorization handshake
-        const gsapi = google.sheets({ version: 'v4', auth: client });
+        const gsapi = google.sheets({ version: 'v4', auth: authClient });
         const response = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'UnlockedUsers!A:A' });
         const rows = response.data.values;
         return rows ? rows.some(row => row[0] === userId) : false;
@@ -90,8 +87,7 @@ async function checkUserUnlocked(userId) {
 
 async function logUnlockedUser(userId) {
     try {
-        await client.authorize(); // Refresh token authorization handshake
-        const gsapi = google.sheets({ version: 'v4', auth: client });
+        const gsapi = google.sheets({ version: 'v4', auth: authClient });
         await gsapi.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID, 
             range: 'UnlockedUsers!A:A',
@@ -182,8 +178,7 @@ async function sendVerticalActionMenu(to, lang) {
 // --- GEMINI RESPONSE COMPILER ---
 async function getSmartReply(userMessage, userId, lang) {
     try {
-        await client.authorize();
-        const gsapi = google.sheets({ version: 'v4', auth: client });
+        const gsapi = google.sheets({ version: 'v4', auth: authClient });
 
         // Fast FAQ Sheet Lookup Interception
         const faqRes = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'FAQ!A2:B500' });
