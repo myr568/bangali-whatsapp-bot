@@ -34,42 +34,60 @@ const aiModel = genAI.getGenerativeModel({
 
 
 
+
+
+
+
 // --- SECURE GOOGLE AUTH INITIALIZATION ---
 let authClient;
 
 try {
-    // 1. Retrieve the private key from environment variables
     let rawPrivateKey = process.env.GOOGLE_PRIVATE_KEY;
 
     if (!rawPrivateKey) {
-        throw new Error("GOOGLE_PRIVATE_KEY environment variable is completely missing.");
+        throw new Error("GOOGLE_PRIVATE_KEY environment variable is missing.");
     }
 
-    // 2. Clear any accidental enclosing quotes added by pasting fields into dashboards
-    if (rawPrivateKey.startsWith('"') && rawPrivateKey.endsWith('"')) {
-        rawPrivateKey = rawPrivateKey.slice(1, -1);
-    }
-    if (rawPrivateKey.startsWith("'") && rawPrivateKey.endsWith("'")) {
-        rawPrivateKey = rawPrivateKey.slice(1, -1);
+    // 1. Clean up wrapping quotes and clean literal '\n' characters
+    rawPrivateKey = rawPrivateKey.trim();
+    if (rawPrivateKey.startsWith('"') && rawPrivateKey.endsWith('"')) rawPrivateKey = rawPrivateKey.slice(1, -1);
+    if (rawPrivateKey.startsWith("'") && rawPrivateKey.endsWith("'")) rawPrivateKey = rawPrivateKey.slice(1, -1);
+    
+    // Convert literal '\n' text strings into real line breaks
+    let formattedKey = rawPrivateKey.replace(/\\n/g, '\n');
+
+    // 2. If it's single-line, rebuild the proper multi-line OpenSSL structure
+    if (!formattedKey.includes('\n')) {
+        const body = formattedKey
+            .replace('-----BEGIN PRIVATE KEY-----', '')
+            .replace('-----END PRIVATE KEY-----', '')
+            .replace(/\s+/g, ''); // strip spaces
+        
+        // Split key body into standard 64-character chunks
+        const chunks = body.match(/.{1,64}/g) || [body];
+        
+        formattedKey = [
+            '-----BEGIN PRIVATE KEY-----',
+            ...chunks,
+            '-----END PRIVATE KEY-----'
+        ].join('\n');
     }
 
-    // 3. Forcefully re-parse standard escape sequences to fix OpenSSL break styles
-    const cleanPrivateKey = rawPrivateKey
-        .replace(/\\n/g, '\n')     // Fixes double escaped literal strings
-        .replace(/\n/g, '\n')      // Preserves existing newlines
-        .trim();
-
-    // 4. Initialize JWT with clean parameters
+    // 3. Initialize the JWT client
     authClient = new google.auth.JWT({
         email: process.env.GOOGLE_CLIENT_EMAIL,
-        key: cleanPrivateKey,
+        key: formattedKey,
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
-    console.log("🔒 Google Sheets Auth initialized successfully via Clean Private Key.");
+    console.log("🔒 Google Sheets Auth layout compiled cleanly with automated formatter.");
 } catch (error) {
     console.error("❌ CRITICAL: Failed to initialize Google Auth layer:", error.message);
 }
+
+
+
+
 
 
 
