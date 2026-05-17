@@ -1,7 +1,4 @@
-# Ignore Google Credentials JSON files
 *.json
 !package.json
 !package-lock.json
-
-# Ignore node modules folder
 node_modules/
