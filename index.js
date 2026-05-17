@@ -36,49 +36,36 @@ const aiModel = genAI.getGenerativeModel({
 
 
 
+
 // --- SECURE GOOGLE AUTH INITIALIZATION ---
 let authClient;
 
 try {
-    const base64Key = process.env.GOOGLE_PRIVATE_KEY_BASE64;
-
-    if (!base64Key) {
-        throw new Error("GOOGLE_PRIVATE_KEY_BASE64 environment variable is completely missing.");
+    if (!process.env.GOOGLE_CREDS) {
+        throw new Error("GOOGLE_CREDS environment variable is completely missing.");
     }
 
-    // 1. Decode the Base64 string safely back to text
-    let decodedText = Buffer.from(base64Key.trim(), 'base64').toString('utf8');
+    // Parse the raw JSON string directly from Render
+    const credentials = JSON.parse(process.env.GOOGLE_CREDS);
+    
+    // Automatically fix any hidden line break escape sequences
+    const cleanKey = credentials.private_key.replace(/\\n/g, '\n');
 
-    // 2. Strip away headers, footers, literal '\n' texts, and all whitespace characters
-    let cleanBody = decodedText
-        .replace('-----BEGIN PRIVATE KEY-----', '')
-        .replace('-----END PRIVATE KEY-----', '')
-        .replace(/\\n/g, '')  // Strips out explicit '\n' text strings
-        .replace(/\s+/g, ''); // Strips out actual physical line breaks/spaces
-
-    // 3. Rebuild a pristine OpenSSL structure using standard 64-character chunk rows
-    const lines = cleanBody.match(/.{1,64}/g);
-    if (!lines) {
-        throw new Error("Failed to parse valid key components from the provided Base64 data.");
-    }
-
-    const standardPrivateKey = [
-        '-----BEGIN PRIVATE KEY-----',
-        ...lines,
-        '-----END PRIVATE KEY-----'
-    ].join('\n');
-
-    // 4. Initialize JWT Auth Client with the perfectly normalized key layout
     authClient = new google.auth.JWT({
-        email: process.env.GOOGLE_CLIENT_EMAIL,
-        key: standardPrivateKey,
+        email: credentials.client_email,
+        key: cleanKey,
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
-    console.log("🔒 Google Sheets Auth successfully compiled via Pristine Real-Time Line Builder.");
+    console.log("🔒 Google Sheets Auth successfully initialized using raw GOOGLE_CREDS JSON parsing.");
 } catch (error) {
     console.error("❌ CRITICAL: Failed to initialize Google Auth layer:", error.message);
 }
+
+
+
+
+
 
 
 
