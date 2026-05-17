@@ -43,14 +43,9 @@ const googleCredentials = {
   "client_email": "chatbotbangalifoundation@nice-aegis-496104-q5.iam.gserviceaccount.com"
 };
 
-const formattedPrivateKey = googleCredentials.private_key.replace(/\\n/g, '\n');
-
-const client = new google.auth.JWT(
-    googleCredentials.client_email,
-    null,
-    formattedPrivateKey,
-    ['https://www.googleapis.com/auth/spreadsheets']
-);
+// Modern object auth handler that bypasses positional argument errors
+const client = google.auth.fromJSON(googleCredentials);
+client.scopes = ['https://www.googleapis.com/auth/spreadsheets'];
 
 
 
