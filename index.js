@@ -47,22 +47,23 @@ try {
         throw new Error("GOOGLE_PRIVATE_KEY_BASE64 environment variable is completely missing.");
     }
 
-    // Natively decode the safe alphanumeric string back into the exact original OpenSSL key
-    let decodedKey = Buffer.from(base64Key, 'base64').toString('utf8').trim();
+    // 1. Decode base64 string completely back to raw string text
+    let decodedKey = Buffer.from(base64Key.trim(), 'base64').toString('utf8').trim();
 
-    // Re-verify backslash configurations inside memory space
+    // 2. Safely clean up hidden line break literal texts (\n) inside memory
     const cleanPrivateKey = decodedKey
         .replace(/\\n/g, '\n')
         .replace(/\n/g, '\n')
         .trim();
 
+    // 3. Initialize JWT with clean parameters
     authClient = new google.auth.JWT({
         email: process.env.GOOGLE_CLIENT_EMAIL,
         key: cleanPrivateKey,
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
-    console.log("🔒 Google Sheets Auth initialized successfully via Safe Base64 Memory Decoder.");
+    console.log("🔒 Google Sheets Auth initialized successfully via Base64 Memory Decoder.");
 } catch (error) {
     console.error("❌ CRITICAL: Failed to initialize Google Auth layer:", error.message);
 }
