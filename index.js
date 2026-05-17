@@ -37,55 +37,35 @@ const aiModel = genAI.getGenerativeModel({
 
 
 
-
 // --- SECURE GOOGLE AUTH INITIALIZATION ---
 let authClient;
 
 try {
-    let rawPrivateKey = process.env.GOOGLE_PRIVATE_KEY;
+    const base64Key = process.env.GOOGLE_PRIVATE_KEY_BASE64;
 
-    if (!rawPrivateKey) {
-        throw new Error("GOOGLE_PRIVATE_KEY environment variable is missing.");
+    if (!base64Key) {
+        throw new Error("GOOGLE_PRIVATE_KEY_BASE64 environment variable is completely missing.");
     }
 
-    // 1. Clean up wrapping quotes and clean literal '\n' characters
-    rawPrivateKey = rawPrivateKey.trim();
-    if (rawPrivateKey.startsWith('"') && rawPrivateKey.endsWith('"')) rawPrivateKey = rawPrivateKey.slice(1, -1);
-    if (rawPrivateKey.startsWith("'") && rawPrivateKey.endsWith("'")) rawPrivateKey = rawPrivateKey.slice(1, -1);
-    
-    // Convert literal '\n' text strings into real line breaks
-    let formattedKey = rawPrivateKey.replace(/\\n/g, '\n');
+    // Natively decode the safe alphanumeric string back into the exact original OpenSSL key
+    let decodedKey = Buffer.from(base64Key, 'base64').toString('utf8').trim();
 
-    // 2. If it's single-line, rebuild the proper multi-line OpenSSL structure
-    if (!formattedKey.includes('\n')) {
-        const body = formattedKey
-            .replace('-----BEGIN PRIVATE KEY-----', '')
-            .replace('-----END PRIVATE KEY-----', '')
-            .replace(/\s+/g, ''); // strip spaces
-        
-        // Split key body into standard 64-character chunks
-        const chunks = body.match(/.{1,64}/g) || [body];
-        
-        formattedKey = [
-            '-----BEGIN PRIVATE KEY-----',
-            ...chunks,
-            '-----END PRIVATE KEY-----'
-        ].join('\n');
-    }
+    // Re-verify backslash configurations inside memory space
+    const cleanPrivateKey = decodedKey
+        .replace(/\\n/g, '\n')
+        .replace(/\n/g, '\n')
+        .trim();
 
-    // 3. Initialize the JWT client
     authClient = new google.auth.JWT({
         email: process.env.GOOGLE_CLIENT_EMAIL,
-        key: formattedKey,
+        key: cleanPrivateKey,
         scopes: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
-    console.log("🔒 Google Sheets Auth layout compiled cleanly with automated formatter.");
+    console.log("🔒 Google Sheets Auth initialized successfully via Safe Base64 Memory Decoder.");
 } catch (error) {
     console.error("❌ CRITICAL: Failed to initialize Google Auth layer:", error.message);
 }
-
-
 
 
 
