@@ -31,19 +31,16 @@ const aiModel = genAI.getGenerativeModel({
     `
 });
 
-
-
-
 // --- SECURE DIRECT GOOGLE AUTH SERVICE ACCOUNT LINK ---
 const googleCredentials = {
   "type": "service_account",
-  "project_id": "nice-aegis-496104-q5",
+  "project_id": "nice-a-egis-496104-q5",
   "private_key_id": "90e81ff778f116401d7dda9d5726be4097027d2e",
   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCt8ESHWdRaO26F\nV2Iilj6u8xlHTpvlJk2lcQ6/KkIvunHCerJ/y7IUg9umIPPSHSV98novE5L7uLIm\nNqZFXKpzLHuXzjFD6AbxDBJtrYaRJq0XHyh2pjulX4y8d/orIGfJVn33/j4AO8km\n0zjXYzBOA3WEW6dJJXQoTGrU3PK/QGCdkg0/O+TjrOktV8ZEGd39t5YwHKMdlkWo\nSPT4XrumELa0h1Vps3xz+IjWNOfIMsG7/a6UEfH2Tk42SjrKdNB+4w34OGl9brjS\nXSjMLAvX5dZvfLVO95lOAW9KBCsPGCZgIDRyXzto2UMmFaZzaGOAvk1e9elMMcaK\n06G67O75AgMBAAECggEAARpc240zW8bJ3rYXukzrb6wSd7bfpbPDunNtqsLU7HJj\n+MioO50Pehz+RlQp/6XYKu+KnKRPjQxA3Z2rRGrVQ4mKF25ttmFxCSkbWnnceIH/\nMdOXK9jGLY2zedl6lbiXoo72GbMRcmpuo4dOMmLKYmBCvUNghkX4HIOkNMku5TgR\nB6bEPmepvnrkgcBifQgsh3jRSspBl3yh/MJrxwttUZTM94n0+NnqRZoIzOo8aWTh\njgtLBitLyU5xC9C7AHkWKfJEVP+eM+fKj/QD6ecOlBOFfH4/EdGW0vPmRBtLEVUP\nnU8u+v3pnin/4BLRB+d5lf+LhSngw1ybcdgnhqNJQQKBgQDT5a7CrpPqW46P4dUF\nczEYisUjlCsmrJvk03vdTrli3+Eyr3gyedg5WU33gV4bzsFWolcoVyrDS5La+1/S\nyM/CuRytAWDzaRRjLL/xL32jsSY6CS71KTGSHdQ0nKMddt5vCZU+aTPg6qQBZ3sT\nC1N6Ej2JtKJp4f9LO8ESUkruGQKBgQDSJBH3dASlfJZFmMh4YnE6tRuOn00wa7TW\nWT8h81Zgn4Jjuii+v+C69RtbNK6OMQLGXaiJIshOlaXTrnNs3EVV0w/EpPG5AQD7\nnIgZOM3v8vFdqUDTxKfOshEQ/aDN92vMkT0ddF5Ck2NHWKParOqRXCXKQvO0CbgE\nPr0eWK5j4QKBgF6pt38lutLyAChrPV1n7sEGDbgtU3G9nw+FI0rlBpETb2nTViFG\nncBFEz3FP6OwpFLtx34wItyIgJzvvAlQyPA2/oaTnRphEUiVD1LSYpCkbW1z+NRx\niMG8LbcrWvuoxQpZ/6CYIyMR8B7oeeUyJCLezzsbxYsD+adElKZ4uRzRAoGBAKSK\nwda07X5202OjgjVhP6/sZ6uBaPtlGrBMKXb4BsaZn4tfFNBnhhxeGBGOaq/ECJwy\ncekPZzDBVJsvmgm/YDsXjN05Glz2QELECn1VUUt1OzFPegdXkN3z6BEZx3P/LFV9\n1BDgMX6H0dDnw0VS6EjxklWRnyl2ArSwO30ri0GBAoGBAMZ9mZRmrQYkjWrfFANH\neJeqUF+lMdaih854p3zny+5QOrdMRSuSZQI8xYKtcSYheKf2A6hbGZCboFqdi3Lr\nEABN3lcSfBtlPFpS22g3GKqNITofRFTC5hT8PPKaqlRiwAy0MDqIlmWUZa2ux4IF\nATt3DVgyjh898x/NIeRVFR3e\n-----END PRIVATE KEY-----\n",
   "client_email": "chatbotbangalifoundation@nice-aegis-496104-q5.iam.gserviceaccount.com"
 };
 
-// Explicitly parse line breaks using regex to format correctly for OpenSSL
+// Clean string control format mapping
 const cleanPrivateKey = googleCredentials.private_key.replace(/\\n/g, '\n');
 
 const client = new google.auth.JWT(
@@ -53,16 +50,12 @@ const client = new google.auth.JWT(
     ['https://www.googleapis.com/auth/spreadsheets']
 );
 
-
-
-
-
+// Establish single, globally shared interface endpoint handler
+const gsapi = google.sheets({ version: 'v4', auth: client });
 
 // --- RELIABLE SHEETS DATABASE HANDLERS ---
 async function getUserLanguage(userId) {
     try {
-        await client.authorize();
-        const gsapi = google.sheets({ version: 'v4', auth: client });
         const response = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'UserPrefs!A:B' });
         const rows = response.data.values;
         if (rows) {
@@ -74,8 +67,6 @@ async function getUserLanguage(userId) {
 
 async function logLanguage(userId, lang) {
     try {
-        await client.authorize();
-        const gsapi = google.sheets({ version: 'v4', auth: client });
         await gsapi.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID, range: 'UserPrefs!A:B',
             valueInputOption: 'USER_ENTERED', resource: { values: [[userId, lang]] }
@@ -85,8 +76,6 @@ async function logLanguage(userId, lang) {
 
 async function checkUserUnlocked(userId) {
     try {
-        await client.authorize();
-        const gsapi = google.sheets({ version: 'v4', auth: client });
         const response = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'UnlockedUsers!A:A' });
         const rows = response.data.values;
         return rows ? rows.some(row => row[0] === userId) : false;
@@ -95,8 +84,6 @@ async function checkUserUnlocked(userId) {
 
 async function logUnlockedUser(userId) {
     try {
-        await client.authorize();
-        const gsapi = google.sheets({ version: 'v4', auth: client });
         await gsapi.spreadsheets.values.append({
             spreadsheetId: SPREADSHEET_ID, range: 'UnlockedUsers!A:A',
             valueInputOption: 'USER_ENTERED', resource: { values: [[userId]] }
@@ -120,7 +107,6 @@ async function sendToWhatsApp(to, dataPayload) {
 }
 
 // --- DYNAMIC INTERACTIVE MENUS ---
-
 async function sendLanguageSelector(to) {
     await sendToWhatsApp(to, {
         type: "interactive",
@@ -152,7 +138,7 @@ const menuTranslations = {
 
 const labelTranslations = {
     'EN': { donate: "Donate 💰", volunteer: "Be a Volunteer 🤝", aid: "Need Help/Aid? 🙋‍♂️", partner: "Be a Partner 🏢", projects: "Our Projects 📂" },
-    'BN': { donate: "দান করুন 💰", volunteer: "স্বেচ্ছাসেবক হোন 🤝", aid: "সাহায্য প্রয়োজন? 🙋‍♂️", partner: "পার্টনার হোন 🏢", projects: "আমাদের প্রকল্পসমূহ 📂" },
+    'BN': { donate: "দান করুন 💰", volunteer: "স্বেচ্ছাসেবক হোন 🤝", aid: "সাহায্য প্রয়োজন? 🙋‍♂️", partner: "পার্টনার হোন 🏢", projects: "আমাদের প্রকল্পসমূহ 📂" },
     'TR': { donate: "Bağış Yap 💰", volunteer: "Gönüllü Ol 🤝", aid: "Yardım Lazım Mı? 🙋‍♂️", partner: "Ortak Ol 🏢", projects: "Projelerimiz 📂" },
     'AR': { donate: "تبرع الآن 💰", volunteer: "كن متطوعاً 🤝", aid: "هل تحتاج مساعدة؟ 🙋‍♂️", partner: "كن شريكاً 🏢", projects: "مشاريعنا 📂" }
 };
@@ -185,9 +171,6 @@ async function sendVerticalActionMenu(to, lang) {
 // --- GEMINI RESPONSE COMPILER ---
 async function getSmartReply(userMessage, userId, lang) {
     try {
-        await client.authorize();
-        const gsapi = google.sheets({ version: 'v4', auth: client });
-
         // Fast FAQ Sheet Lookup Interception
         const faqRes = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'FAQ!A2:B500' });
         const rows = faqRes.data.values;
@@ -258,7 +241,7 @@ app.post('/webhook', async (req, res) => {
                 },
                 'CLICK_AID': {
                     'EN': "Beneficiary Application: https://bangalifoundation.org/become-a-beneficiary/",
-                    'BN': "সাহায্য পাওয়ার আবেদন লিঙ্ক: https://bangalifoundation.org/become-a-beneficiary/",
+                    'BN': "সাহায্য পাওয়ার আবেদন লিঙ্ক: https://bangalifoundation.org/become-a-beneficiary/",
                     'TR': "Yararlanıcı Başvuru Formu: https://bangalifoundation.org/become-a-beneficiary/",
                     'AR': "طلب الحصول على مساعدة: https://bangalifoundation.org/become-a-beneficiary/"
                 },
@@ -281,8 +264,8 @@ app.post('/webhook', async (req, res) => {
 
             const unlockMsg = {
                 'EN': "🔒 Menu exploration completed! You can now type any questions freely to speak directly with our WhatsApp AI assistant.",
-                'BN': "🔒 মেনু সম্পন্ন হয়েছে! এখন আপনি আমাদের হোয়াটসঅ্যাপ এআই সহকারীর সাথে সরাসরি যেকোনো প্রশ্ন লিখে চ্যাট করতে পারেন।",
-                'TR': "🔒 Menü incelemesi tamamlandı! Artık WhatsApp yapay zeka asistanımızla serbestçe konuşabilir ve sorularınızı sorabilirsiniz.",
+                'BN': "🔒 মেনু সম্পন্ন হয়েছে! এখন আপনি আমাদের হোয়াটসঅ্যাপ এআই সহকারীর সাথে সরাসরি যেকোনো প্রশ্ন লিখে চ্যাট করতে পারেন।",
+                'TR': "🔒 Menü incelemesi tamamlandı! Artık WhatsApp yapay zeka asistanımızla serbestçe konuşabilir ve sorularinizi sorabilirsiniz.",
                 'AR': "🔒 اكتملت القائمة! يمكنك الآن كتابة أي أسئلة بحرية للتحدث مباشرة مع مساعد الذكاء الاصطناعي الخاص بنا."
             };
             await sendToWhatsApp(waId, { type: "text", text: { body: unlockMsg[lang] } });
@@ -291,6 +274,7 @@ app.post('/webhook', async (req, res) => {
     // B. Free Text Messages Event Processing
     else if (messageEvent.type === 'text') {
         const text = messageEvent.text.body;
+        const waId = messageEvent.from;
         const lang = await getUserLanguage(waId);
         const isUnlocked = await checkUserUnlocked(waId);
 
@@ -306,5 +290,4 @@ app.post('/webhook', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 8080;
-
 app.listen(PORT, () => console.log(`🚀 Production Multi-Language AI Assistant Engine Online`));
