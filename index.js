@@ -34,13 +34,13 @@ const aiModel = genAI.getGenerativeModel({
 // --- SECURE DIRECT GOOGLE AUTH SERVICE ACCOUNT LINK ---
 const googleCredentials = {
   "type": "service_account",
-  "project_id": "nice-a-egis-496104-q5",
+  "project_id": "nice-aegis-496104-q5",
   "private_key_id": "90e81ff778f116401d7dda9d5726be4097027d2e",
   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCt8ESHWdRaO26F\nV2Iilj6u8xlHTpvlJk2lcQ6/KkIvunHCerJ/y7IUg9umIPPSHSV98novE5L7uLIm\nNqZFXKpzLHuXzjFD6AbxDBJtrYaRJq0XHyh2pjulX4y8d/orIGfJVn33/j4AO8km\n0zjXYzBOA3WEW6dJJXQoTGrU3PK/QGCdkg0/O+TjrOktV8ZEGd39t5YwHKMdlkWo\nSPT4XrumELa0h1Vps3xz+IjWNOfIMsG7/a6UEfH2Tk42SjrKdNB+4w34OGl9brjS\nXSjMLAvX5dZvfLVO95lOAW9KBCsPGCZgIDRyXzto2UMmFaZzaGOAvk1e9elMMcaK\n06G67O75AgMBAAECggEAARpc240zW8bJ3rYXukzrb6wSd7bfpbPDunNtqsLU7HJj\n+MioO50Pehz+RlQp/6XYKu+KnKRPjQxA3Z2rRGrVQ4mKF25ttmFxCSkbWnnceIH/\nMdOXK9jGLY2zedl6lbiXoo72GbMRcmpuo4dOMmLKYmBCvUNghkX4HIOkNMku5TgR\nB6bEPmepvnrkgcBifQgsh3jRSspBl3yh/MJrxwttUZTM94n0+NnqRZoIzOo8aWTh\njgtLBitLyU5xC9C7AHkWKfJEVP+eM+fKj/QD6ecOlBOFfH4/EdGW0vPmRBtLEVUP\nnU8u+v3pnin/4BLRB+d5lf+LhSngw1ybcdgnhqNJQQKBgQDT5a7CrpPqW46P4dUF\nczEYisUjlCsmrJvk03vdTrli3+Eyr3gyedg5WU33gV4bzsFWolcoVyrDS5La+1/S\nyM/CuRytAWDzaRRjLL/xL32jsSY6CS71KTGSHdQ0nKMddt5vCZU+aTPg6qQBZ3sT\nC1N6Ej2JtKJp4f9LO8ESUkruGQKBgQDSJBH3dASlfJZFmMh4YnE6tRuOn00wa7TW\nWT8h81Zgn4Jjuii+v+C69RtbNK6OMQLGXaiJIshOlaXTrnNs3EVV0w/EpPG5AQD7\nnIgZOM3v8vFdqUDTxKfOshEQ/aDN92vMkT0ddF5Ck2NHWKParOqRXCXKQvO0CbgE\nPr0eWK5j4QKBgF6pt38lutLyAChrPV1n7sEGDbgtU3G9nw+FI0rlBpETb2nTViFG\nncBFEz3FP6OwpFLtx34wItyIgJzvvAlQyPA2/oaTnRphEUiVD1LSYpCkbW1z+NRx\niMG8LbcrWvuoxQpZ/6CYIyMR8B7oeeUyJCLezzsbxYsD+adElKZ4uRzRAoGBAKSK\nwda07X5202OjgjVhP6/sZ6uBaPtlGrBMKXb4BsaZn4tfFNBnhhxeGBGOaq/ECJwy\ncekPZzDBVJsvmgm/YDsXjN05Glz2QELECn1VUUt1OzFPegdXkN3z6BEZx3P/LFV9\n1BDgMX6H0dDnw0VS6EjxklWRnyl2ArSwO30ri0GBAoGBAMZ9mZRmrQYkjWrfFANH\neJeqUF+lMdaih854p3zny+5QOrdMRSuSZQI8xYKtcSYheKf2A6hbGZCboFqdi3Lr\nEABN3lcSfBtlPFpS22g3GKqNITofRFTC5hT8PPKaqlRiwAy0MDqIlmWUZa2ux4IF\nATt3DVgyjh898x/NIeRVFR3e\n-----END PRIVATE KEY-----\n",
   "client_email": "chatbotbangalifoundation@nice-aegis-496104-q5.iam.gserviceaccount.com"
 };
 
-// Clean string control format mapping
+// Clean and decode the multi-line key for OpenSSL validation
 const cleanPrivateKey = googleCredentials.private_key.replace(/\\n/g, '\n');
 
 const client = new google.auth.JWT(
@@ -50,45 +50,56 @@ const client = new google.auth.JWT(
     ['https://www.googleapis.com/auth/spreadsheets']
 );
 
-// Establish single, globally shared interface endpoint handler
-const gsapi = google.sheets({ version: 'v4', auth: client });
-
 // --- RELIABLE SHEETS DATABASE HANDLERS ---
 async function getUserLanguage(userId) {
     try {
+        await client.authorize(); // Refresh token authorization handshake
+        const gsapi = google.sheets({ version: 'v4', auth: client });
         const response = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'UserPrefs!A:B' });
         const rows = response.data.values;
         if (rows) {
             const userRow = rows.reverse().find(row => row[0] === userId);
             return userRow ? userRow[1] : null;
         }
-    } catch (e) { return null; }
+    } catch (e) { console.error("Error reading language preference:", e.message); return null; }
 }
 
 async function logLanguage(userId, lang) {
     try {
+        await client.authorize(); // Refresh token authorization handshake
+        const gsapi = google.sheets({ version: 'v4', auth: client });
         await gsapi.spreadsheets.values.append({
-            spreadsheetId: SPREADSHEET_ID, range: 'UserPrefs!A:B',
-            valueInputOption: 'USER_ENTERED', resource: { values: [[userId, lang]] }
+            spreadsheetId: SPREADSHEET_ID, 
+            range: 'UserPrefs!A:B',
+            valueInputOption: 'USER_ENTERED', 
+            resource: { values: [[userId, lang]] }
         });
-    } catch (e) { console.error("Error logging language", e); }
+        console.log(`✅ Logged Language preference for user: ${userId}`);
+    } catch (e) { console.error("Error logging language preference:", e.message); }
 }
 
 async function checkUserUnlocked(userId) {
     try {
+        await client.authorize(); // Refresh token authorization handshake
+        const gsapi = google.sheets({ version: 'v4', auth: client });
         const response = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'UnlockedUsers!A:A' });
         const rows = response.data.values;
         return rows ? rows.some(row => row[0] === userId) : false;
-    } catch (e) { return false; }
+    } catch (e) { console.error("Error checking unlocked profile status:", e.message); return false; }
 }
 
 async function logUnlockedUser(userId) {
     try {
+        await client.authorize(); // Refresh token authorization handshake
+        const gsapi = google.sheets({ version: 'v4', auth: client });
         await gsapi.spreadsheets.values.append({
-            spreadsheetId: SPREADSHEET_ID, range: 'UnlockedUsers!A:A',
-            valueInputOption: 'USER_ENTERED', resource: { values: [[userId]] }
+            spreadsheetId: SPREADSHEET_ID, 
+            range: 'UnlockedUsers!A:A',
+            valueInputOption: 'USER_ENTERED', 
+            resource: { values: [[userId]] }
         });
-    } catch (e) { console.error("Error logging unlocked user", e); }
+        console.log(`✅ Logged Unlocked Profile tracking entry for: ${userId}`);
+    } catch (e) { console.error("Error logging unlocked user entry:", e.message); }
 }
 
 // --- WHATSAPP WIRE TRANSMISSION ENGINE ---
@@ -171,6 +182,9 @@ async function sendVerticalActionMenu(to, lang) {
 // --- GEMINI RESPONSE COMPILER ---
 async function getSmartReply(userMessage, userId, lang) {
     try {
+        await client.authorize();
+        const gsapi = google.sheets({ version: 'v4', auth: client });
+
         // Fast FAQ Sheet Lookup Interception
         const faqRes = await gsapi.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'FAQ!A2:B500' });
         const rows = faqRes.data.values;
@@ -192,7 +206,7 @@ async function getSmartReply(userMessage, userId, lang) {
                 valueInputOption: 'USER_ENTERED',
                 resource: { values: [[bangladeshTime, userId, "WhatsApp Gemini AI Engine"]] }
             });
-        } catch (e) { console.error("Logging sync error", e); }
+        } catch (e) { console.error("Logging sync error", e.message); }
 
         return aiText;
     } catch (error) { return "System latency detected. Please try again shortly or contact mohammadyasin568@gmail.com"; }
